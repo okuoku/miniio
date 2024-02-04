@@ -33,6 +33,8 @@ extern "C" {
 #define MINIIO_EVT_READ_ERROR 10
 /* [6 11(process-exit) handle userdata status signal] */
 #define MINIIO_EVT_PROCESS_EXIT 11
+/* [4 12(chime) handle userdata] */
+#define MINIIO_EVT_CHIME 12
 
 /* I/O Context */
 void* miniio_ioctx_create(void);
@@ -42,6 +44,11 @@ void miniio_ioctx_destroy(void* ctx);
 /* Context, Eventqueue */
 int miniio_get_events(void* ctx, uintptr_t* buf, uint32_t bufcount,
                       uint32_t* out_written, uint32_t* out_current);
+
+/* Chime */
+void* miniio_chime_new(void* ctx, void* userdata);
+int miniio_chime_trigger(void* ctx, void* handle);
+void miniio_chime_destroy(void* ctx, void* handle);
 
 /* Timer */
 void* miniio_timer_create(void* ctx, void* userdata);

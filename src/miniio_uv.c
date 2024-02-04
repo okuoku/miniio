@@ -408,6 +408,7 @@ miniio_net_param_name_fetch(void* pctx, void* param, uint32_t idx,
 enum miniio_uv_objtype_e {
     OBJTYPE_TCP,
     OBJTYPE_PIPE,
+    OBJTYPE_ASYNC,
 };
 
 struct miniio_uv_obj_s {
@@ -418,6 +419,7 @@ struct miniio_uv_obj_s {
         uv_pipe_t pipe;
         uv_stream_t stream;
         uv_handle_t handle;
+        uv_async_t async;
     } as;
     union {
         uv_file pipefds[2];
@@ -879,6 +881,56 @@ miniio_pipe_new(void* pctx, void* userdata){
     obj->as.pipe.data = obj;
     return obj;
 }
+
+/* Chime */
+static void
+cb_async(uv_async_t* uhandle){
+    struct miniio_uv_obj_s* obj = (struct miniio_uv_obj_s*)uhandle->data;
+    uintptr_t ev[4];
+    /* [4 12(chime) handle userdata] */
+    ev[0] = 4;
+    ev[1] = MINIIO_EVT_CHIME;
+    ev[2] = (uintptr_t)obj;
+    ev[3] = (uintptr_t)obj->userdata;
+    addevent(obj->ctx, ev);
+}
+
+void* 
+miniio_chime_new(void* pctx, void* userdata){
+    int r;
+    struct miniio_uv_obj_s* obj;
+    struct miniio_uv_ctx_s* ctx = (struct miniio_uv_ctx_s*)pctx;
+    obj = malloc(sizeof(struct miniio_uv_obj_s));
+    if(! obj){
+        return 0;
+    }
+    r = uv_async_init(&ctx->loop, &obj->as.async, cb_async);
+    if(r){
+        free(obj);
+        return 0;
+    }
+    obj->as.async.data = obj;
+    obj->userdata = userdata;
+    obj->ctx = ctx;
+    obj->objtype = OBJTYPE_ASYNC;
+    return obj;
+}
+
+int 
+miniio_chime_trigger(void* pctx, void* handle){
+    int r;
+    (void)pctx;
+    struct miniio_uv_obj_s* obj = (struct miniio_uv_obj_s*)handle;
+    r = uv_async_send(&obj->as.async);
+    return r;
+}
+
+void 
+miniio_chime_destroy(void* ctx, void* handle){
+    (void)ctx;
+    free(handle);
+}
+
 
 /* Stream I/O */
 static void
