@@ -242,12 +242,12 @@ struct miniio_uv_netparam_s {
     struct miniio_uv_ctx_s* ctx;
     void* userdata;
     const char* hostname;
-    int port;
     int has_addrinfo;
     union {
         uv_getaddrinfo_t gai;
         uv_req_t req;
     } as;
+    char portnamebuf[8]; /* enough to store "65535" */
 };
 
 void* 
@@ -261,7 +261,6 @@ miniio_net_param_create(void* ctx, void* userdata){
 
     np->ctx = (struct miniio_uv_ctx_s *)ctx;
     np->hostname = 0;
-    np->port = 0;
     np->userdata = userdata;
     np->has_addrinfo = 0;
 }
@@ -307,7 +306,14 @@ int
 miniio_net_param_port(void* ctx, void* param, int port){
     struct miniio_uv_netparam_s* np = (struct miniio_uv_netparam_s *)param;
     (void) ctx;
-    np->port = port;
+    memset(np->portnamebuf, 0, 8);
+    if(port < 0){
+        return -1;
+    }
+    if(port > 65535){
+        return -1;
+    }
+    snprintf(np->portnamebuf, 8, "%d", port);
     return 0;
 }
 
@@ -318,7 +324,7 @@ cb_getaddrinfo(uv_getaddrinfo_t* req, int status, struct addrinfo *res){
     uintptr_t ev[5];
 
     if(status == 0){
-        np->has_addrinfo = 0;
+        np->has_addrinfo = 1;
     }
 
     /* [5 (netresolve) handle userdata result] */
@@ -344,7 +350,7 @@ miniio_net_param_name_resolve(void* pctx, void* param){
 
     np->as.req.data = param;
     r = uv_getaddrinfo(&ctx->loop, &np->as.gai, cb_getaddrinfo,
-                       np->hostname, 0, 0);
+                       np->hostname, np->portnamebuf, 0);
 
     if(r){
         return r;
