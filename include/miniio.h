@@ -87,7 +87,7 @@ void* miniio_buffer_lock(void* ctx, void* handle, uint32_t offset,
 void miniio_buffer_unlock(void* ctx, void* handle);
 int miniio_write(void* ctx, void* stream, void* buffer, uint32_t offset, 
                  uint32_t len);
-int miniio_start_read(void* ctx, void* stream, void* buffer);
+int miniio_start_read(void* ctx, void* stream);
 
 /* { */
 #ifdef __cplusplus

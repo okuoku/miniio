@@ -1070,10 +1070,9 @@ cb_read(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf){
 }
 
 int 
-miniio_start_read(void* ctx, void* stream, void* buffer){
+miniio_start_read(void* ctx, void* stream){
     int r;
     struct miniio_uv_obj_s* obj = (struct miniio_uv_obj_s*)stream;
-    struct miniio_uv_buffer_s* buf = (struct miniio_uv_buffer_s*)buffer;
 
     r = uv_read_start(&obj->as.stream, cb_alloc_read, cb_read);
 
