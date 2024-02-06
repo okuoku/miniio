@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <uv.h>
 #include "miniio.h"
 
@@ -43,6 +44,9 @@ addevent(struct miniio_uv_ctx_s* ctx, uintptr_t* event){
     ev->event = msg;
     ev->eventlen = len;
     ev->prev = ctx->last;
+    if(ev->prev){
+        ev->prev->next = ev;
+    }
     ev->next = 0;
     ctx->total_queued_event_len += len;
     ctx->last = ev;
@@ -263,6 +267,8 @@ miniio_net_param_create(void* ctx, void* userdata){
     np->hostname = 0;
     np->userdata = userdata;
     np->has_addrinfo = 0;
+
+    return np;
 }
 
 void 
@@ -983,6 +989,7 @@ newbuffer(void* ctx, void* buffer, uintptr_t buflen, void* userdata){
     buf->ctx = (struct miniio_uv_ctx_s*) ctx;
     buf->userdata = userdata;
     buf->buflen = buflen;
+    buf->buffer = buffer;
     buf->req.req.data = buf;
 
     return buf;
