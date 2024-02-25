@@ -237,6 +237,8 @@ miniio_tcp_create(void* pctx, void* pparam, uint32_t idx, void* userdata){
     handle->userdata = userdata;
     handle->listener_port = param ? param->port : -1;
     handle->reading = 0;
+
+    return handle;
 }
 
 int
