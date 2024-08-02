@@ -199,7 +199,7 @@ miniio_buffer_destroy(void* ctx, void* handle){
 
 void* 
 miniio_buffer_lock(void* ctx, void* handle, uint32_t offset, uint32_t len){
-    return handle + offset;
+    return (char*)handle + offset;
 }
 
 void 
