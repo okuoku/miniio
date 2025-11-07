@@ -19,7 +19,7 @@ else()
     set(libtype STATIC)
 endif()
 
-if("${CMAKE_SYSTEM_NAME}" STREQUAL WindowsStore)
+if("${CMAKE_SYSTEM_NAME}" STREQUAL WindowsStore OR ANDROID)
     set(backend stub)
 elseif(EMSCRIPTEN)
     set(backend localnetstub)
